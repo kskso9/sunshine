@@ -3,7 +3,6 @@
     android:layout_width="match_parent" android:layout_height="wrap_content"
     android:id="@+id/list_item_forecast_textview"
     android:gravity="center_vertical"
-    android:text="Today is Sunny day"
     android:minHeight="?android:listPreferredItemHeight"
     android:textColor="@color/background_material_dark"
     >
