@@ -51,11 +51,17 @@ public class ForecastFragment extends ListFragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_refresh) {
-            FetchWeatherTask ft = new FetchWeatherTask();
-            ft.execute("94043");
-            //setListAdapter(mForecastAdapter);
-            return true;
+
+
+        switch (id) {
+            case R.id.action_refresh:
+                FetchWeatherTask ft = new FetchWeatherTask();
+                ft.execute("94043");
+                return true;
+
+
+            default:
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -80,11 +86,11 @@ public class ForecastFragment extends ListFragment {
         //intentでActivity遷移
 
 
-        Intent intent = new Intent(getActivity(),DetailActivity.class);
+        Intent intent = new Intent(getActivity(), DetailActivity.class);
         //Listに保管されているデータを読み込む
         String forecast = mForecastAdapter.getItem(position);
-        Log.v("ForecastFragment",forecast);
-        intent.putExtra("text",forecast);
+        Log.v("ForecastFragment", forecast);
+        intent.putExtra("text", forecast);
         startActivity(intent);
 
     }
@@ -101,10 +107,11 @@ public class ForecastFragment extends ListFragment {
         protected void onPostExecute(String[] strings) {
             super.onPostExecute(strings);
             //setListAdapter(mForecastAdapter);
-            if(strings != null){
+            if (strings != null) {
                 setListAdapter(mForecastAdapter);
             }
         }
+
         @Override
         protected String[] doInBackground(String... urls) {
             HttpURLConnection urlConnection = null;
