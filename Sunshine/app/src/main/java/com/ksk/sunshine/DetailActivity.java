@@ -31,8 +31,6 @@ public class DetailActivity extends AppCompatActivity {
         });
     }
 
-    //detailでもrefreshは出来るようにしたほうがいいかも
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

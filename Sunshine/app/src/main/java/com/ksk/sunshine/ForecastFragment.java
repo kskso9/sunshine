@@ -3,9 +3,11 @@ package com.ksk.sunshine;
 
 import android.app.ListFragment;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
@@ -35,6 +37,7 @@ public class ForecastFragment extends ListFragment {
 
 
     private ArrayAdapter<String> mForecastAdapter;
+    private List<String> datalist;
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -55,15 +58,48 @@ public class ForecastFragment extends ListFragment {
 
         switch (id) {
             case R.id.action_refresh:
-                FetchWeatherTask ft = new FetchWeatherTask();
-                ft.execute("94043");
+                loadData();
                 return true;
 
+            case R.id.map_intent:
+                //暗示的intent
+                //現在位置の取得を行い、文字列の生成
+                //実際はpreferenceからlocationを引っ張ってきてlatlonに代入してvalueをget
+                Uri gmmIntentUri = Uri.parse("geo:37.7749,-122.4194");
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
 
+                return true;
             default:
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+
+    private void loadData() {
+        FetchWeatherTask ft = new FetchWeatherTask();
+        //ここでPreferenceの読み込み
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        //SharedPreferences.Editor editor = sharedPref.edit();
+        //editor.clear().commit();
+        String location = sharedPref.getString("location", "94043");
+        String units = sharedPref.getString("units","metric");
+        ft.execute(location,units);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        loadData();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        //loadData();
     }
 
     @Override
@@ -71,12 +107,12 @@ public class ForecastFragment extends ListFragment {
         super.onViewCreated(view, savedInstanceState);
 
         //default
-        String[] data = {"Today - Sunny", "Tomorrow - Rainy", "Wednesday - i don't know", "Thursday - Sunny", "Friday - -Let's drink!"};
+        //String[] data = {"Today - Sunny", "Tomorrow - Rainy", "Wednesday - i don't know", "Thursday - Sunny", "Friday - -Let's drink!"};
         //get the Data using API
-        List<String> datalist = new ArrayList<String>(Arrays.asList(data));
-        mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, datalist);
-        setListAdapter(mForecastAdapter);
-
+        loadData();
+        //List<String> datalist = new ArrayList<String>(Arrays.asList(data));
+        //mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, datalist);
+        //setListAdapter(mForecastAdapter);
 
     }
 
@@ -84,8 +120,6 @@ public class ForecastFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
         //intentでActivity遷移
-
-
         Intent intent = new Intent(getActivity(), DetailActivity.class);
         //Listに保管されているデータを読み込む
         String forecast = mForecastAdapter.getItem(position);
@@ -103,6 +137,7 @@ public class ForecastFragment extends ListFragment {
     //BackGround implementation
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
+        //裏スレッドが完了した後に呼ばれる
         @Override
         protected void onPostExecute(String[] strings) {
             super.onPostExecute(strings);
@@ -128,7 +163,7 @@ public class ForecastFragment extends ListFragment {
             try {
                 //param
                 builder.appendQueryParameter("q", urls[0]);
-                builder.appendQueryParameter("units", "metric");
+                builder.appendQueryParameter("units",urls[1]);
                 builder.appendQueryParameter("cnt", "7");
                 builder.appendQueryParameter("APPID", "885cfd6b7ff2244bb4608152e7e54064");
                 URL url = new URL(builder.build().toString());
@@ -136,9 +171,11 @@ public class ForecastFragment extends ListFragment {
                 Log.v("MyFragment", "URL:" + url.toString());
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
-                //他のメソッドは？
                 urlConnection.setRequestMethod("GET");
+                //ここで最終的にリクエストを送信してデータをGETする
                 urlConnection.connect();
+
+
                 InputStream inputStream = urlConnection.getInputStream();
                 StringBuffer stringBuffer = new StringBuffer();
                 if (inputStream == null) {
@@ -179,12 +216,8 @@ public class ForecastFragment extends ListFragment {
             try {
                 //String[]でリストに挿入するデータをreturn
                 String[] data = getWeatherDataFromJson(forecastJsonStr, 7);
-                List<String> datalist = new ArrayList<String>(Arrays.asList(data));
-
-
+                datalist = new ArrayList<String>(Arrays.asList(data));
                 mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, datalist);
-                //ListFragmentのdocument読んでおく
-
 
                 return data;
             } catch (JSONException e) {
@@ -210,6 +243,8 @@ public class ForecastFragment extends ListFragment {
             return highLowStr;
         }
 
+
+        //getしたJSONから必要なデータを読み込んで表示する形式に変換する(コピペ)
         private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
                 throws JSONException {
 

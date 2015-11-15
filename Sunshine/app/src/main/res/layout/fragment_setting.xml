@@ -9,7 +9,11 @@
     tools:context="com.ksk.sunshine.SettingActivityFragment"
     tools:showIn="@layout/activity_setting">
 
-
-    <!--　ここにfragmentそのもののレイアウトを書く　-->
-
+    <!-- このListViewを追加しないとエラーになる
+        理由はよくわからないが、PreferenceFragmentを呼び出すとまずViewのListを参照するので、fragmentのレイアウトにListViewが入っていないとエラーになる
+    -->
+    <ListView
+        android:id="@id/android:list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 </RelativeLayout>

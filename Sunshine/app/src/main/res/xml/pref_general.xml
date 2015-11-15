@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:defaultValue="94043"
+        android:inputType="text"
+        android:key="location"
+        android:singleLine="true"
+        android:title="Location" />
+    <ListPreference
+        android:defaultValue="metric"
+        android:entries="@array/entries_list_unit"
+        android:entryValues="@array/entries_value_list_unit"
+        android:key="units"
+        android:title="Temperature Units" />
+</PreferenceScreen>
